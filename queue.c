@@ -108,17 +108,8 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
     element_t *target = list_first_entry(head, element_t, list);
     list_del(head->next);
 
-    /*int length = strlen(target->value);
-    if (length <= bufsize - 1) {
-        strncpy(sp, target->value, length);
-        sp[length] = '\0';
-    } else {
-        strncpy(sp, target->value, bufsize - 1);
-        sp[bufsize - 1] = '\0';
-    }*/
-
-    int length = strlen(target->value) <= bufsize - 1 ? strlen(target->value)
-                                                      : bufsize - 1;
+    int len_tarvalue = strlen(target->value);
+    int length = len_tarvalue <= bufsize - 1 ? len_tarvalue : bufsize - 1;
     strncpy(sp, target->value, length);
     sp[length] = '\0';
 
@@ -133,10 +124,10 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
 {
     if (head == NULL || list_empty(head) || sp == NULL)
         return NULL;
-    element_t *target = list_first_entry(head, element_t, list);
+    element_t *target = list_last_entry(head, element_t, list);
     list_del(head->prev);
-    int length = strlen(target->value) <= bufsize - 1 ? strlen(target->value)
-                                                      : bufsize - 1;
+    int len_tarvalue = strlen(target->value);
+    int length = len_tarvalue <= bufsize - 1 ? len_tarvalue : bufsize - 1;
     strncpy(sp, target->value, length);
     sp[length] = '\0';
     return target;
@@ -180,7 +171,14 @@ bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
     if (head == NULL || list_empty(head))
-        return true;
+        return false;
+    struct list_head *slow, *fast;
+    for (slow = fast = head->next; fast != head && fast->next != head;
+         slow = slow->next, fast = fast->next->next) {
+    }
+    list_del(slow);
+    q_release_element(list_entry(slow, element_t, list));
+    return true;
 }
 
 /*
