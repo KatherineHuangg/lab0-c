@@ -77,7 +77,7 @@ bool q_insert_tail(struct list_head *head, char *s)
     if (newnode == NULL)
         return false;
     int length = strlen(s) + 1;
-    newnode->value = malloc(sizeof(length));
+    newnode->value = malloc(sizeof(char) * (length));
     if (newnode->value == NULL) {  // Cannot allocate space for value;
         free(newnode);
         return false;
@@ -108,14 +108,19 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
     element_t *target = list_first_entry(head, element_t, list);
     list_del(head->next);
 
-    int length = strlen(target->value);
+    /*int length = strlen(target->value);
     if (length <= bufsize - 1) {
         strncpy(sp, target->value, length);
         sp[length] = '\0';
     } else {
         strncpy(sp, target->value, bufsize - 1);
         sp[bufsize - 1] = '\0';
-    }
+    }*/
+
+    int length = strlen(target->value) <= bufsize - 1 ? strlen(target->value)
+                                                      : bufsize - 1;
+    strncpy(sp, target->value, length);
+    sp[length] = '\0';
 
     return target;
 }
@@ -153,15 +158,14 @@ void q_release_element(element_t *e)
  */
 int q_size(struct list_head *head)
 {
-    if (!head)
+    if (head == NULL || list_empty(head))
         return 0;
 
-    int len = 0;
-    struct list_head *li;
-
-    list_for_each (li, head)
-        len++;
-    return len;
+    unsigned int count = 0;
+    struct list_head *node = NULL;
+    list_for_each (node, head)
+        count++;
+    return count;
 }
 
 /*
@@ -175,7 +179,8 @@ int q_size(struct list_head *head)
 bool q_delete_mid(struct list_head *head)
 {
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
-    return true;
+    if (head == NULL || list_empty(head))
+        return true;
 }
 
 /*
