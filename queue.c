@@ -172,7 +172,7 @@ bool q_delete_mid(struct list_head *head)
     // https://leetcode.com/problems/delete-the-middle-node-of-a-linked-list/
     if (head == NULL || list_empty(head))
         return false;
-    struct list_head *slow, *fast;
+    struct list_head *slow = NULL, *fast = NULL;
     for (slow = fast = head->next; fast != head && fast->next != head;
          slow = slow->next, fast = fast->next->next) {
     }
@@ -193,6 +193,18 @@ bool q_delete_mid(struct list_head *head)
 bool q_delete_dup(struct list_head *head)
 {
     // https://leetcode.com/problems/remove-duplicates-from-sorted-list-ii/
+    if (head == NULL)
+        return false;
+    element_t *entry = NULL, *safe = NULL;
+    char *pre_value = "";
+    list_for_each_entry_safe (entry, safe, head, list) {
+        if (strcmp(pre_value, entry->value) == 0) {
+            list_del(&entry->list);
+            q_release_element(entry);
+        } else {
+            pre_value = entry->value;
+        }
+    }
     return true;
 }
 
@@ -202,6 +214,14 @@ bool q_delete_dup(struct list_head *head)
 void q_swap(struct list_head *head)
 {
     // https://leetcode.com/problems/swap-nodes-in-pairs/
+    if (head == NULL)
+        return;
+    struct list_head *node = NULL;
+    for (node = head->next; node != head && node->next != head;
+         node = node->next) {
+        struct list_head *tmp = node->next;
+        list_move_tail(tmp, node);
+    }
 }
 
 /*
@@ -211,11 +231,25 @@ void q_swap(struct list_head *head)
  * (e.g., by calling q_insert_head, q_insert_tail, or q_remove_head).
  * It should rearrange the existing ones.
  */
-void q_reverse(struct list_head *head) {}
+void q_reverse(struct list_head *head)
+{
+    if (head == NULL || list_empty(head))
+        return;
+    struct list_head *node = NULL, *safe = NULL, *tmp = NULL;
+    list_for_each_safe (node, safe, head) {
+        tmp = node->next;
+        node->next = node->prev;
+        node->prev = tmp;
+    }
+    tmp = head->next;
+    head->next = head->prev;
+    head->prev = tmp;
+}
 
 /*
  * Sort elements of queue in ascending order
  * No effect if q is NULL or empty. In addition, if q has only one
  * element, do nothing.
  */
+
 void q_sort(struct list_head *head) {}
