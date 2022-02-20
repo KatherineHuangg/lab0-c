@@ -252,4 +252,62 @@ void q_reverse(struct list_head *head)
  * element, do nothing.
  */
 
-void q_sort(struct list_head *head) {}
+struct list_head *merge(struct list_head *list1, struct list_head *list2)
+{
+    // merge with recursive
+    if (list1 == NULL)
+        return list2;
+    if (list2 == NULL)
+        return list1;
+
+    element_t *list1_entry = list_entry(list1, element_t, list);
+    element_t *list2_entry = list_entry(list2, element_t, list);
+    if (strcmp(list1_entry->value, list2_entry->value) < 0) {
+        list1->next = merge(list1->next, list2);
+        return list1;
+    } else {
+        list2->next = merge(list1, list2->next);
+        return list2;
+    }
+}
+
+struct list_head *mergeSortList(struct list_head *list)
+{
+    if (!list || !list->next)
+        return list;
+
+    // split list
+    struct list_head *fast = list->next;
+    struct list_head *slow = list;
+    while (fast != NULL && fast->next != NULL) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    fast = slow->next;  // Right hand side
+    slow->next = NULL;  // Left hand side's tail
+
+    // Sort each list
+    struct list_head *l1 = mergeSortList(list);
+    struct list_head *l2 = mergeSortList(fast);
+
+    // merge sorted l1 and sorted l2
+    return merge(l1, l2);
+}
+
+void q_sort(struct list_head *head)
+{
+    if (head == NULL || list_empty(head))
+        return;
+    struct list_head *list = head->next;
+    head->prev->next = NULL;
+    head->next = mergeSortList(list);
+
+    struct list_head *curr = head, *next = head->next;
+    while (next != NULL) {
+        next->prev = curr;
+        curr = next;
+        next = next->next;
+    }
+    curr->next = head;
+    head->prev = curr;
+}
