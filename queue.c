@@ -197,12 +197,22 @@ bool q_delete_dup(struct list_head *head)
         return false;
     element_t *entry = NULL, *safe = NULL;
     char *pre_value = "";
+    struct list_head *same = NULL;
+    bool last_dup = false;
+
     list_for_each_entry_safe (entry, safe, head, list) {
         if (strcmp(pre_value, entry->value) == 0) {
+            last_dup = true;
             list_del(&entry->list);
             q_release_element(entry);
         } else {
+            if (last_dup == true) {
+                list_del(same);
+                q_release_element(list_entry(same, element_t, list));
+                last_dup = false;
+            }
             pre_value = entry->value;
+            same = &entry->list;
         }
     }
     return true;
@@ -296,7 +306,7 @@ struct list_head *mergeSortList(struct list_head *list)
 
 void q_sort(struct list_head *head)
 {
-    if (head == NULL || list_empty(head))
+    if (head == NULL || list_empty(head) || list_is_singular(head))
         return;
     struct list_head *list = head->next;
     head->prev->next = NULL;
