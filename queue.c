@@ -108,10 +108,8 @@ element_t *q_remove_head(struct list_head *head, char *sp, size_t bufsize)
     element_t *target = list_first_entry(head, element_t, list);
     list_del(head->next);
 
-    int len_tarvalue = strlen(target->value);
-    int length = len_tarvalue <= bufsize - 1 ? len_tarvalue : bufsize - 1;
-    strncpy(sp, target->value, length);
-    sp[length] = '\0';
+    strncpy(sp, target->value, bufsize);
+    sp[bufsize - 1] = '\0';
 
     return target;
 }
@@ -126,10 +124,10 @@ element_t *q_remove_tail(struct list_head *head, char *sp, size_t bufsize)
         return NULL;
     element_t *target = list_last_entry(head, element_t, list);
     list_del(head->prev);
-    int len_tarvalue = strlen(target->value);
-    int length = len_tarvalue <= bufsize - 1 ? len_tarvalue : bufsize - 1;
-    strncpy(sp, target->value, length);
-    sp[length] = '\0';
+
+    strncpy(sp, target->value, bufsize);
+    sp[bufsize - 1] = '\0';
+
     return target;
 }
 
@@ -264,21 +262,26 @@ void q_reverse(struct list_head *head)
 
 struct list_head *merge(struct list_head *list1, struct list_head *list2)
 {
-    // merge with recursive
-    if (list1 == NULL)
-        return list2;
-    if (list2 == NULL)
-        return list1;
+    struct list_head *head = NULL;
+    struct list_head **ptr = &head;
 
-    element_t *list1_entry = list_entry(list1, element_t, list);
-    element_t *list2_entry = list_entry(list2, element_t, list);
-    if (strcmp(list1_entry->value, list2_entry->value) < 0) {
-        list1->next = merge(list1->next, list2);
-        return list1;
-    } else {
-        list2->next = merge(list1, list2->next);
-        return list2;
+    for (; list1 && list2; ptr = &(*ptr)->next) {
+        element_t *list1_entry = list_entry(list1, element_t, list);
+        element_t *list2_entry = list_entry(list2, element_t, list);
+
+        if (strcmp(list1_entry->value, list2_entry->value) <= 0) {
+            *ptr = list1;
+            list1 = list1->next;
+        } else {
+            *ptr = list2;
+            list2 = list2->next;
+        }
     }
+    if (list1 == NULL)
+        *ptr = list2;
+    if (list2 == NULL)
+        *ptr = list1;
+    return head;
 }
 
 struct list_head *mergeSortList(struct list_head *list)
