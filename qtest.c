@@ -762,6 +762,51 @@ static bool do_show(int argc, char *argv[])
     return show_queue(0);
 }
 
+void q_shuffle(struct list_head *head)
+{
+    if (!head || list_empty(head))
+        return;
+
+    srand(time(NULL));
+    int count = q_size(head);
+    if (count == 1)
+        return;
+
+    for (; count > 0; count--) {
+        struct list_head *curr = head->next;
+        int num = rand() % count + 1;
+        count--;
+        for (int i = 1; i < num; i++) {
+            curr = curr->next;
+        }
+        list_move_tail(curr, head);
+    }
+
+    return;
+}
+
+static bool do_shuffle(int argc, char *argv[])
+{
+    if (argc != 1) {
+        report(1, "%s takes no arguments", argv[0]);
+        return false;
+    }
+
+    if (!l_meta.l)
+        report(3, "Warning: Try to access null queue");
+    error_check();
+
+    set_noallocate_mode(true);
+    if (exception_setup(true))
+        q_shuffle(l_meta.l);
+    exception_cancel();
+
+    set_noallocate_mode(false);
+
+    show_queue(3);
+    return !error_check();
+}
+
 static void console_init()
 {
     ADD_COMMAND(new, "                | Create new queue");
@@ -801,6 +846,8 @@ static void console_init()
               NULL);
     add_param("fail", &fail_limit,
               "Number of times allow queue operations to return false", NULL);
+
+    ADD_COMMAND(shuffle, "                | shuffle the queue");
 }
 
 /* Signal handlers */
